@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="./css/main.css">
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <title>lazy_log_viewer</title>        
+    
+<script>
+'use strict';  // eslint-disable-line
+
+// グローバル変数
+var port;
+
+var save_data = "";
+var data_receiving_last_time = -1;
+
+var timestamp = [];   // 0
+var v_setp = [];      // 14
+var v_enc = [];       // 1 
+var v_ave = [];       // 2
+var v_acc = [];       // 4
+var v_comp = [];      // 3
+
+var ang_v_setp = [];  // 19
+var ang_v = [];       // 6
+var ang_v_traj = [];  // 18
+
+var acc_x = [];       // 9
+var acc_y = [];       // 10
+var acc_cor_x = [];   // 7
+var acc_cor_y = [];   // 8
+
+var ang_setp = [];    // 21
+var ang_traj = [];    // 20
+var ang = [];         // 5
+var beta = [];        // 13
+
+var x_setp = [];      // 15
+var y_setp = [];      // 16
+var x = [];           // 11
+var y = [];           // 12
+
+function clearData(){
+  save_data = "";
+  data_receiving_last_time = -1;
+
+  timestamp = [];
+  v_setp = [];
+  v_enc = [];
+  v_ave = [];
+  v_acc = [];
+  v_comp = [];
+
+  ang_v_setp = [];
+  ang_v = [];
+  ang_v_traj = [];
+
+  acc_x = [];
+  acc_y = [];
+  acc_cor_x = [];
+  acc_cor_y = [];
+
+  ang_setp = [];
+  ang_traj = [];
+  ang = [];
+  beta = [];
+
+  x_setp = [];
+  y_setp = [];
+  x = [];
+  y = [];
+}
+
+function appendData(data_list){
+  timestamp.push(data_list[0]);
+  v_setp.push(data_list[14]);
+  v_enc.push(data_list[1]);
+  v_ave.push(data_list[2]);
+  v_acc.push(data_list[4]);
+  v_comp.push(data_list[3]);
+
+  ang_v_setp.push(data_list[19]);
+  ang_v.push(data_list[6]);
+  ang_v_traj.push(data_list[18]);
+
+  acc_x.push(data_list[9]);
+  acc_y.push(data_list[10]);
+  acc_cor_x.push(data_list[7]);
+  acc_cor_y.push(data_list[8]);
+
+  ang_setp.push(data_list[21]);
+  ang_traj.push(data_list[20]);
+  ang.push(data_list[5]);
+  beta.push(data_list[13]);
+
+  x_setp.push(data_list[15]);
+  y_setp.push(data_list[16]);
+  x.push(data_list[11]);
+  y.push(data_list[12]);
+}
+
+function initSerialPort(){
+  const SerialPort = require('serialport');
+  const Readline = require('@serialport/parser-readline');
+  const serial_port = document.getElementById("serial_port_id").value;
+  const baudrate = Number(document.getElementById("baudrate_id").value);
+  port = new SerialPort(serial_port,{ baudRate: baudrate });
+  const parser = new Readline();
+  port.pipe(parser);
+
+  parser.on('data', function(line){      
+    const time_now = new Date();
+    data_receiving_last_time = time_now.getTime();
+    save_data += line + "\n";    
+    let split_list = line.split(',');        
+    appendData(split_list);
+  });  
+}
+
+function closeSerialPort(){
+  port.close(function (err) {
+    console.log('port closed', err);
+  });
+}
+
+function makeTrace(x_, y_, name_){
+  var trace = {
+      x: x_,
+      y: y_,
+      mode: 'lines+markers',
+      name: name_,
+      type: 'scattergl'
+    };
+  return trace;
+}
+
+function saveCsv(){
+  const fs = require("fs");
+
+  try {
+    const date = new Date();
+    const file_name = "./log/" +
+                     date.getFullYear()    + "年" + 
+				             (date.getMonth() + 1)  + "月" + 
+				              date.getDate()        + "日" + 
+				              date.getHours()       + "時" + 
+				              date.getMinutes()     + "分" + 
+                      date.getSeconds()     + "秒" +
+                      ".csv" 
+    fs.writeFileSync(file_name, save_data);
+    console.log('csv書き出し完了');
+  }catch(e){
+    console.log("csv書き出し失敗")
+    console.log(e);
+  }
+}
+
+function drawGraph(){    
+    let t_v_setp = makeTrace(timestamp, v_setp, "v_setp");
+    let t_v_enc = makeTrace(timestamp, v_enc, "v_enc");
+    let t_v_ave = makeTrace(timestamp, v_ave, "v_ave");
+    let t_v_acc = makeTrace(timestamp, v_acc, "v_acc");
+    let t_v_comp = makeTrace(timestamp, v_comp, "v_comp");
+    
+    let t_ang_v_setp = makeTrace(timestamp, ang_v_setp, "ang_v_setp");
+    let t_ang_v = makeTrace(timestamp, ang_v, "ang_v");
+    let t_ang_v_traj = makeTrace(timestamp, ang_v_traj, "ang_v_traj");
+    
+    let t_acc_x = makeTrace(timestamp, acc_x, "acc_x");
+    let t_acc_y = makeTrace(timestamp, acc_y, "acc_y");
+    let t_acc_cor_x = makeTrace(timestamp, acc_cor_x, "acc_cor_x");
+    let t_acc_cor_y = makeTrace(timestamp, acc_cor_y, "acc_cor_y");
+    
+    let t_ang_setp = makeTrace(timestamp, ang_setp, "ang_setp");
+    let t_ang_traj = makeTrace(timestamp, ang_traj, "ang_traj");
+    let t_ang = makeTrace(timestamp, ang, "ang");
+    let t_beta = makeTrace(timestamp, beta, "beta");
+    
+    let t_x_setp = makeTrace(timestamp, x_setp, "x_setp");
+    let t_y_setp = makeTrace(timestamp, y_setp, "y_setp");
+    let t_x = makeTrace(timestamp, x, "x");
+    let t_y = makeTrace(timestamp, y, "y");
+    
+
+    let data1 = [t_v_setp, t_v_enc, t_v_ave, t_v_acc, t_v_comp];
+    let data2 = [t_ang_v_setp, t_ang_v, t_ang_v_traj];
+    let data3 = [t_acc_x, t_acc_y, t_acc_cor_x, t_acc_cor_y];
+    let data4 = [t_ang_setp, t_ang_traj, t_ang, t_beta];
+    let data5 = [t_x_setp, t_y_setp, t_x, t_y];
+
+    Plotly.react('graph_1', data1);
+    Plotly.react('graph_2', data2);
+    Plotly.react('graph_3', data3);
+    Plotly.react('graph_4', data4);
+    Plotly.react('graph_5', data5);    
+}
+
+function interval1000msec(){
+  // シリアルポートとbaudrateをlocalStorageに記憶させる
+  window.localStorage['serial_port'] = document.getElementById("serial_port_id").value;
+  window.localStorage['baudrate'] = document.getElementById("baudrate_id").value;
+
+  const time_now = new Date();
+  const diff = time_now.getTime() - data_receiving_last_time;  
+  if(data_receiving_last_time > 0 && diff > 1000){
+    data_receiving_last_time = -1;
+    saveCsv();    
+    drawGraph();
+    clearData();
+  } 
+}
+
+function main() { 
+  // 画面へのドラッグ＆ドロップ時処理
+  document.ondragover = document.ondrop = function (e) {
+    e.preventDefault()    
+  }
+  document.addEventListener('drop', function (e) {
+    let f = e.dataTransfer.files[0];
+    // ファイル内容の読み取り
+    let reader = new FileReader();
+        reader.onload = function(event) {                    
+          clearData();
+          const text = event.target.result;
+          const split_n = text.split("\n");
+          split_n.forEach(row => {
+            const split_list = row.split(',');            
+            appendData(split_list);
+          });
+          drawGraph();
+          clearData();
+        }
+
+        reader.readAsText(f);
+  });
+
+  // localStorageに記憶していた情報をテキストボックスへ入力
+  document.getElementById("serial_port_id").value = window.localStorage['serial_port'];
+  document.getElementById("baudrate_id").value = window.localStorage['baudrate'];
+}
+
+window.onload = function(){
+  setInterval(" interval1000msec()", 1000);
+  main();
+}
+
+</script>
+
+<body>
+接続ポート:<input id ="serial_port_id" type="text" name="name">
+baudrate:<input id ="baudrate_id"  type="text" name="name">
+<button onclick="initSerialPort()" type="button" name="name" value="connect">connect</button>
+<button onclick="closeSerialPort()" type="button" name="name" value="disconnect">disconnect</button>
+
+<div id = "graph_1"></div>
+<div id = "graph_2"></div>
+<div id = "graph_3"></div>
+<div id = "graph_4"></div>
+<div id = "graph_5"></div>
+
+</body>  
+
+</html>
