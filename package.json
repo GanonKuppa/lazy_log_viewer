@@ -4,14 +4,14 @@
   "description": "シリアルポートからデータを読みと取ってグラフ化するアプリ",
   "repository": "https://github.com/GanonKuppa/lazy_log_viewer.git",
   "main": "index.js",
-  "scripts": {    
+  "scripts": {
     "run": "node_modules\\electron\\dist\\electron.exe .",
     "build": "node node_modules\\electron-packager\\bin\\electron-packager.js . lazy_log_viewer --platform=win32 --arch=x64 --overwrite",
     "rebuild": "electron-rebuild -f -w serialport"
   },
   "author": "GanonKuppa",
   "license": "MIT",
-  "dependencies": {    
+  "dependencies": {
     "serialport": "^9.0.3"
   },
   "devDependencies": {
