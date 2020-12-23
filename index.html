@@ -106,7 +106,15 @@ function initSerialPort(){
   const Readline = require('@serialport/parser-readline');
   const serial_port = document.getElementById("serial_port_id").value;
   const baudrate = Number(document.getElementById("baudrate_id").value);
-  port = new SerialPort(serial_port,{ baudRate: baudrate });
+  port = new SerialPort(serial_port,{ baudRate: baudrate }, (e) =>{
+    if (e) {      
+      document.getElementById("port_opened").style.color = "red";
+      return console.log('Error: ', e.message);
+    }
+
+  });
+  document.getElementById("port_opened").style.color = "blue";
+
   const parser = new Readline();
   port.pipe(parser);
 
@@ -120,7 +128,9 @@ function initSerialPort(){
 }
 
 function closeSerialPort(){
+  document.getElementById("port_opened").style.color = "black";
   port.close(function (err) {
+    document.getElementById("port_opened").style.color = "red";
     console.log('port closed', err);
   });
 }
@@ -239,20 +249,23 @@ function main() {
   // localStorageに記憶していた情報をテキストボックスへ入力
   document.getElementById("serial_port_id").value = window.localStorage['serial_port'];
   document.getElementById("baudrate_id").value = window.localStorage['baudrate'];
+
+  initSerialPort();
 }
 
-window.onload = function(){
-  setInterval(" interval1000msec()", 1000);
+window.onload = function(){  
   main();
+  setInterval(" interval1000msec()", 1000);
 }
 
 </script>
 
 <body>
-接続ポート:<input id ="serial_port_id" type="text" name="name">
-baudrate:<input id ="baudrate_id"  type="text" name="name">
-<button onclick="initSerialPort()" type="button" name="name" value="connect">connect</button>
-<button onclick="closeSerialPort()" type="button" name="name" value="disconnect">disconnect</button>
+<span id = "port_opened">■ </span>
+  接続ポート:<input id ="serial_port_id" type="text" >
+baudrate:<input id ="baudrate_id"  type="text" >
+<button onclick="initSerialPort()" type="button" value="connect">connect</button>
+<button onclick="closeSerialPort()" type="button" value="disconnect">disconnect</button>
 
 <div id = "graph_1"></div>
 <div id = "graph_2"></div>
