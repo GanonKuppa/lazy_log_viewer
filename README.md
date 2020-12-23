@@ -20,7 +20,6 @@ git clone https://github.com/GanonKuppa/lazy_log_viewer.git
 cd lazy_log_viewer
 npm install
 npm run rebuild
-
 ```
 
 npm run rebuildはelectronでserialportモジュールを使うために必要です。package.jsonにこのコマンドが登録されており、serialportモジュールがelectron-rebuildによってリビルドされます。electronでは一部のモジュールがrebuildしないと動作しないため注意して下さい。serialportはリビルドが必要なモジュールです。
@@ -75,6 +74,15 @@ timestamp, v_enc, v_ave, v_comp, v_acc, ang, ang_v, acc_cor_x, acc_cor_y, acc_x,
 - アプリのイメージサイズは問わない ( electronなので...)
 - CPU負荷は問わない (electronなので...)
 - データ読み込み時のエラー処理は実装しなくてもよい (自分しか使わんし )
+
+# 受信データの形式を変更するときのヒント
+index.htmlを編集して下さい。
+
+- グローバル変数として定義されている配列を書き換える
+- グラフ描画用のdiv要素を書きたいグラフの数に変更
+- drawGraph()関数の中身を書き換える
+- clearData()でクリアしている配列を書き換える
+
 
 
 # ライセンス
