@@ -10,7 +10,7 @@
 
 # 動作環境
 - OS: Windows 10
-- nodejs: v14.15.1 (https://nodejs.org/ja/からwindows用のリリースをダウンロードして使用)
+- nodejs: v14.15.1 (https://nodejs.org/ja/ からwindows用のリリースをダウンロードして使用)
 
 
 # インストール方法
